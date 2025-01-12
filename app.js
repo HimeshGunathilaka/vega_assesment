@@ -46,14 +46,22 @@ const evChargingMachine = createMachine({
   },
 });
 
+const authenticate = (evChargingActor) => {
+  console.log("Authorizing...");
+  setTimeout(() => {
+    const result = Math.random() < 0.4 ? "success" : "fail";
+    console.log(`Authorization result: ${result}`);
+    evChargingActor.send({ type: result });
+  }, 2000);
+};
+
 const evChargingActor = createActor(evChargingMachine);
 
 evChargingActor.subscribe((state) => {
-  console.log(`State Transition: Entered ${state.value} state.`);
+  console.log(`Entered ${state.value} state.`);
 });
 
 evChargingActor.start();
-// console.log("Initial state: Idle");
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -62,6 +70,7 @@ const rl = readline.createInterface({
 
 console.log(`
 EV Charging Station State Machine:
+
 a: Press 'a' to authorize
 f: Press 'f' to un-authorize
 s: Press 's' to start charging
@@ -71,14 +80,9 @@ r: Press 'r' to reset
 `);
 
 rl.on("line", (input) => {
-  const number = Math.random();
-  //   console.log(`Generated number: ${number}`);
-
   switch (input) {
     case "a":
-      const eventType = number >= 0.5 ? "success" : "fail";
-      // console.log(`Sending event: ${eventType}`);
-      evChargingActor.send({ type: eventType });
+      authenticate(evChargingActor);
       break;
     case "s":
       evChargingActor.send({ type: "start" });
